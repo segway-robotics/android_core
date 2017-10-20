@@ -1,2 +1,1 @@
-See [rosjava_core](https://github.com/rosjava/rosjava_core) readme.
-# android_core
+https://github.com/segway-robotics/vision_msg_proc/blob/master/README.md
