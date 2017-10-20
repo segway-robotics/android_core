@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CameraTutorial</string>
+    <string name="pub_rgbd">Pub RGBD:</string>
+    <string name="pub_pcam">Pub PCam:</string>
+    <string name="pub_dts">DTS:</string>
+    <string name="pub_spr">Pub Speech:</string>
+    <string name="sub_motion">Sub Motion:</string>
+</resources>
