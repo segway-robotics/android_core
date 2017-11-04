@@ -11,18 +11,18 @@
         <Switch
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/rgbd"
-            android:text="@string/pub_rgbd"/>
+            android:id="@+id/rscolor"
+            android:text="@string/pub_rscolor"/>
         <Switch
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/pcam"
-            android:text="@string/pub_pcam"/>
+            android:id="@+id/rsdepth"
+            android:text="@string/pub_rsdepth"/>
         <Switch
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/dts"
-            android:text="@string/pub_dts"/>
+            android:id="@+id/tf"
+            android:text="@string/pub_tf"/>
     </LinearLayout>
 
     <LinearLayout

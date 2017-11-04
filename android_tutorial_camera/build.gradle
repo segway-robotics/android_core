@@ -16,7 +16,10 @@
 
 dependencies {
   compile project(':android_10')
-  compile 'com.segway.robot:visionsdk:0.6.48'
+  compile 'com.segway.robot:visionsdk:0.6.162'
+  compile 'com.segway.robot:basesdk:0.6.178'
+  compile 'com.segway.robot:headsdk:0.6.178'
+  compile 'com.segway.robot:sensorsdk:0.6.197'
 }
 
 apply plugin: 'com.android.application'
@@ -25,9 +28,9 @@ android {
   compileSdkVersion 25
 
   defaultConfig {
-    minSdkVersion 20
+    minSdkVersion 21
     applicationId "org.ros.android.android_tutorial_camera"
-    targetSdkVersion 21
+    targetSdkVersion 23
     versionCode 1
     versionName "1.0"
   }
