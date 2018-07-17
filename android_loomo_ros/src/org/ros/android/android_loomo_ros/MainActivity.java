@@ -42,16 +42,14 @@ import org.ros.node.NodeMainExecutor;
  */
 public class MainActivity extends RosActivity implements CompoundButton.OnCheckedChangeListener {
     public static final String TAG = "MainRosActivity";
-    private int cameraId;
-    private RosCameraPreviewView rosCameraPreviewView;
 
     private Vision mVision;
 
     private Switch mPubRsColorSwitch;
     private Switch mPubRsDepthSwitch;
     private Switch mPubTfSwitch;
-//    private Switch mPubSpeechSwitch;
-//    private Switch mSubMotionSwitch;
+
+    private RealsensePublisher mRealsensePublisher;
 
     private LoomoRosBridgeNode mBridgeNode;
 
@@ -61,119 +59,108 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        // Set up GUI window
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.main);
-        rosCameraPreviewView = (RosCameraPreviewView) findViewById(R.id.ros_camera_preview_view);
 
+        // Add some switches to turn on/off sensor publishers
         mPubRsColorSwitch = (Switch) findViewById(R.id.rscolor);
         mPubRsDepthSwitch = (Switch) findViewById(R.id.rsdepth);
         mPubTfSwitch = (Switch) findViewById(R.id.tf);
-//        mPubSpeechSwitch = (Switch) findViewById(R.id.speech);
-//        mSubMotionSwitch = (Switch) findViewById(R.id.motion);
 
+        // Add some listeners to the states of the switches
         mPubRsColorSwitch.setOnCheckedChangeListener(this);
         mPubRsDepthSwitch.setOnCheckedChangeListener(this);
         mPubTfSwitch.setOnCheckedChangeListener(this);
-//        mPubSpeechSwitch.setOnCheckedChangeListener(this);
-//        mSubMotionSwitch.setOnCheckedChangeListener(this);
 
+        // Start an instance of the LoomoRosBridgeNode
         mBridgeNode = new LoomoRosBridgeNode();
+
+        // get Vision SDK instance
+        mVision = Vision.getInstance();
+        mVision.bindService(this, mBindVisionListener);
     }
 
 
     @Override
     protected void onRestart() {
         super.onRestart();
-        Log.d(TAG, "onRestart: called");
+        Log.d(TAG, "onRestart() called");
         mPubRsColorSwitch.setChecked(false);
         mPubRsDepthSwitch.setChecked(false);
         mPubTfSwitch.setChecked(false);
-//        mPubSpeechSwitch.setChecked(false);
-//        mSubMotionSwitch.setChecked(false);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mPubRsColorSwitch.setChecked(false);
+        mPubRsDepthSwitch.setChecked(false);
+        mPubTfSwitch.setChecked(false);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        Log.d(TAG, "onStop: called");
-        if (null != mVision) {
-            mVision.unbindService();
-            StreamInfo[] infos = mVision.getActivatedStreamInfo();
-            for(StreamInfo info : infos) {
-                switch (info.getStreamType()) {
-                    case StreamType.COLOR:
-                        mVision.stopListenFrame(StreamType.COLOR);
-                        break;
-                    case StreamType.DEPTH:
-                        mVision.stopListenFrame(StreamType.DEPTH);
-                        break;
-                }
-            }
-        }
+        Log.d(TAG, "onStop() called");
     }
 
     @Override
     protected void init(NodeMainExecutor nodeMainExecutor) {
-        Log.d(TAG, "init: called");
         NodeConfiguration nodeConfiguration =
                 NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(),
                         getMasterUri());
         nodeMainExecutor.execute(mBridgeNode, nodeConfiguration);
     }
 
+//    ServiceBinder.BindStateListener mBindStateListener = new ServiceBinder.BindStateListener() {
+//        @Override
+//        public void onBind() {
+//            Log.d(TAG, "onBind() called");
+//            mPubRsColorSwitch.setEnabled(true);
+//            mPubRsDepthSwitch.setEnabled(true);
+//        }
+//
+//        @Override
+//        public void onUnbind(String reason) {
+//            Log.d(TAG, "onUnbind() called with: reason = [" + reason + "]");
+//        }
+//    };
+
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        // Someone has clicked a button - handle it here
         switch (buttonView.getId()) {
             case R.id.rscolor:
-                Log.d(TAG, "onCheckedChanged: called");
-                mBridgeNode.mIsPubRsColor = isChecked;
+                mRealsensePublisher.mIsPubRsColor = isChecked;
                 if (isChecked) {
-                    if (!Vision.getInstance().bindService(this, mBindVisionListener))
-                        Toast.makeText(this, "Bind sensor service failed!", Toast.LENGTH_SHORT).show();
-                    else
-                        Toast.makeText(this, "Bind sensor service success！", Toast.LENGTH_SHORT).show();
+                    mRealsensePublisher.start_color();
                 } else {
-                    Log.d(TAG, "onCheckedChanged: unbind sensor service");
-                    Vision.getInstance().unbindService();
+                    mRealsensePublisher.stop_color();
                 }
                 break;
             case R.id.rsdepth:
-                mBridgeNode.mIsPubRsDepth = isChecked;
+                mRealsensePublisher.mIsPubRsDepth = isChecked;
                 if (isChecked) {
-                    if (!Vision.getInstance().bindService(this, mBindVisionListener))
-                        Toast.makeText(this, "Bind sensor service failed!", Toast.LENGTH_SHORT).show();
-                    else
-                        Toast.makeText(this, "Bind sensor service success！", Toast.LENGTH_SHORT).show();
+                    mRealsensePublisher.start_depth();
                 } else {
-                    Log.d(TAG, "onCheckedChanged: unbind sensor service");
-                    Vision.getInstance().unbindService();
+                    mRealsensePublisher.stop_depth();
                 }
                 break;
             case R.id.tf:
-                if (isChecked) {
-                    if (!Sensor.getInstance().bindService(this, mBridgeNode.mSensorBindListener))
-                        Toast.makeText(this, "Bind sensor service failed!", Toast.LENGTH_SHORT).show();
-                    else
-                        Toast.makeText(this, "Bind sensor service success！", Toast.LENGTH_SHORT).show();
-                } else {
-                    Log.d(TAG, "onCheckedChanged: unbind sensor service");
-                    Sensor.getInstance().unbindService();
-                }
+//                if (isChecked) {
+//                    if (!Sensor.getInstance().bindService(this, mBridgeNode.mSensorBindListener))
+//                        Toast.makeText(this, "Bind sensor service failed!", Toast.LENGTH_SHORT).show();
+//                    else
+//                        Toast.makeText(this, "Bind sensor service success！", Toast.LENGTH_SHORT).show();
+//                } else {
+//                    Log.d(TAG, "onCheckedChanged: unbind sensor service");
+//                    Sensor.getInstance().unbindService();
+//                }
                 break;
-//            case R.id.speech:
-//                if (isChecked) {
-//                    ///
-//                } else {
-//                    ///
-//                }
-//                break;
-//            case R.id.motion:
-//                if (isChecked) {
-//                } else {
-//                }
-//                break;
         }
     }
 
@@ -181,49 +168,53 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
         @Override
         public void onBind() {
             Log.i(TAG, "onBindVision");
-            mVision = Vision.getInstance();
-            startRgbdTransfer();
+            if (mRealsensePublisher == null) {
+                Log.d(TAG, "bindVision need to create new RealsensePublisher.");
+                mRealsensePublisher = new RealsensePublisher(mVision, mBridgeNode);
+            }
+            Log.d(TAG, "bindVision enabling realsense switches.");
+            mPubRsColorSwitch.setEnabled(true);
+            mPubRsDepthSwitch.setEnabled(true);
         }
 
         @Override
         public void onUnbind(String reason) {
             Log.i(TAG, "onUnbindVision: " + reason);
-            stopRgbdTransfer();
         }
     };
 
-    private synchronized void startRgbdTransfer() {
-        Log.w(TAG, "startRgbdTransfer()");
-        if (null == mVision) {
-            Log.w(TAG, "startRgbdTransfer(): did not bind service!");
-            return;
-        }
-        StreamInfo[] infos = mVision.getActivatedStreamInfo();
-        for(StreamInfo info : infos) {
-            switch (info.getStreamType()) {
-                case StreamType.COLOR:
-                    mBridgeNode.updateCameraInfo(2, mVision.getColorDepthCalibrationData().colorIntrinsic,
-                            info.getWidth(), info.getHeight());
-                    Log.d(TAG, "startListenFrame: called");
-                    mVision.startListenFrame(StreamType.COLOR, mBridgeNode.mRsColorListener);
-                    break;
-                case StreamType.DEPTH:
-                    mBridgeNode.updateCameraInfo(3, mVision.getColorDepthCalibrationData().depthIntrinsic,
-                            info.getWidth(), info.getHeight());
-                    mVision.startListenFrame(StreamType.DEPTH, mBridgeNode.mRsDepthListener);
-                    break;
-            }
-        }
-        Log.w(TAG, "startRgbdTransfer() done.");
-    }
+//    private synchronized void startRgbdTransfer() {
+//        Log.w(TAG, "startRgbdTransfer()");
+//        if (null == mVision) {
+//            Log.w(TAG, "startRgbdTransfer(): did not bind service!");
+//            return;
+//        }
+//        StreamInfo[] infos = mVision.getActivatedStreamInfo();
+//        for(StreamInfo info : infos) {
+//            switch (info.getStreamType()) {
+//                case StreamType.COLOR:
+//                    mBridgeNode.updateCameraInfo(2, mVision.getColorDepthCalibrationData().colorIntrinsic,
+//                            info.getWidth(), info.getHeight());
+//                    Log.d(TAG, "startListenFrame: called");
+//                    mVision.startListenFrame(StreamType.COLOR, mBridgeNode.mRsColorListener);
+//                    break;
+//                case StreamType.DEPTH:
+//                    mBridgeNode.updateCameraInfo(3, mVision.getColorDepthCalibrationData().depthIntrinsic,
+//                            info.getWidth(), info.getHeight());
+//                    mVision.startListenFrame(StreamType.DEPTH, mBridgeNode.mRsDepthListener);
+//                    break;
+//            }
+//        }
+//        Log.w(TAG, "startRgbdTransfer() done.");
+//    }
 
-    private synchronized void stopRgbdTransfer() {
-        if (null == mVision) {
-            Log.w(TAG, "stopRgbdTransfer(): did not bind service!");
-            return;
-        }
-        Log.d(TAG, "stopRgbdTransfer: called");
-        mVision.stopListenFrame(StreamType.COLOR);
-        mVision.stopListenFrame(StreamType.DEPTH);
-    }
+//    private synchronized void stopRgbdTransfer() {
+//        if (null == mVision) {
+//            Log.w(TAG, "stopRgbdTransfer(): did not bind service!");
+//            return;
+//        }
+//        Log.d(TAG, "stopRgbdTransfer: called");
+//        mVision.stopListenFrame(StreamType.COLOR);
+//        mVision.stopListenFrame(StreamType.DEPTH);
+//    }
 }
