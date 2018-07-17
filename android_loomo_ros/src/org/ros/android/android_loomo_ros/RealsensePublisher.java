@@ -1,7 +1,6 @@
 package org.ros.android.android_loomo_ros;
 
 import android.graphics.Bitmap;
-import android.nfc.Tag;
 import android.util.Log;
 
 import com.segway.robot.sdk.vision.Vision;
@@ -12,20 +11,18 @@ import com.segway.robot.sdk.vision.stream.StreamType;
 
 import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.ros.internal.message.MessageBuffers;
-import org.ros.message.Duration;
-import org.ros.message.Time;
 import org.ros.node.topic.Publisher;
 
 import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
 import sensor_msgs.CameraInfo;
 import sensor_msgs.CompressedImage;
 import sensor_msgs.Image;
-import tf2_msgs.TFMessage;
+import java.util.Queue;
+
 
 /**
  * Created by mfe on 7/17/18.
@@ -47,17 +44,17 @@ public class RealsensePublisher {
     private int mRsDepthHeight = 240;
 
     private ChannelBufferOutputStream mRsColorOutStream, mRsDepthOutStream;
-    private Queue<Long> mDepthStamps;
+    public Queue<Long> mDepthStamps;
     private Bitmap mRsColorBitmap;
 
     boolean mIsPubRsColor;
     boolean mIsPubRsDepth;
 
-    public RealsensePublisher(Vision mVision, LoomoRosBridgeNode mBridgeNode) {
+    public RealsensePublisher(Vision mVision, LoomoRosBridgeNode mBridgeNode, Queue<Long> mDepthStamps) {
         this.mVision = mVision;
         this.mBridgeNode = mBridgeNode;
 
-        mDepthStamps = new ConcurrentLinkedDeque<>();
+        this.mDepthStamps = mDepthStamps;
         mRsColorOutStream = new ChannelBufferOutputStream(MessageBuffers.dynamicBuffer());
         mRsDepthOutStream = new ChannelBufferOutputStream(MessageBuffers.dynamicBuffer());
     }
@@ -127,7 +124,7 @@ public class RealsensePublisher {
         private double lastFrameStamp = 0.d; // in millisecond
         @Override
         public void onNewFrame(int streamType, Frame frame) {
-            Log.d(TAG, "mRsColorListener onNewFrame...");
+//            Log.d(TAG, "mRsColorListener onNewFrame...");
             if (!mIsPubRsColor) {
                 Log.d(TAG, "mRsColorListener: !mIsPubRsColor");
                 return;
@@ -163,7 +160,7 @@ public class RealsensePublisher {
         private double lastFrameStamp = 0.d; // in millisecond
         @Override
         public void onNewFrame(int streamType, Frame frame) {
-            Log.d(TAG, "mRsDepthListener onNewFrame...");
+//            Log.d(TAG, "mRsDepthListener onNewFrame...");
             if (!mIsPubRsDepth)
                 return;
             if (streamType != StreamType.DEPTH) {
@@ -212,7 +209,6 @@ public class RealsensePublisher {
     }
 
     private synchronized void publishCameraInfo(int type, std_msgs.Header header) {
-        Log.d(TAG, "publish camerainfo...");
         Publisher<CameraInfo> pubr;
         CameraInfo info;
         Intrinsic intrinsic;
@@ -223,7 +219,6 @@ public class RealsensePublisher {
             Log.d(TAG, "publishCameraInfo type==1 -> not implemented.");
             return;
         } else if (type == 2) {
-            Log.d(TAG, "publishCameraInfo type==2.");
             pubr = mBridgeNode.mRsColorInfoPubr;
             intrinsic = mRsColorIntrinsic;
             width = mRsColorWidth;
@@ -255,6 +250,5 @@ public class RealsensePublisher {
         info.setK(k);
 
         pubr.publish(info);
-        Log.d(TAG, "published camerainfo...");
     }
 }
