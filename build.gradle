@@ -25,7 +25,7 @@ buildscript {
 apply plugin: "catkin"
 
 allprojects {
-    group "org.ros.android_core"
+    group "org.ros.android_loomo_ros_core"
     version = project.catkin.pkg.version
 }
 

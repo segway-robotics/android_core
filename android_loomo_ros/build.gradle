@@ -1,0 +1,51 @@
+/*
+ * Copyright (C) 2011 Google Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+/* Recommended dependencies according to developer.segway.com as of July 17, 2018 */
+//dependencies {
+//  compile 'com.segway.robot:visionsdk:0.6.408'
+//  compile 'com.segway.robot:speech-sdk:0.5.266'
+//  compile 'com.segway.robot:headsdk:0.6.562'
+//  compile 'com.segway.robot:basesdk:0.6.562'
+//  compile 'com.segway.robot:sensorsdk:0.6.562'
+//  compile 'com.segway.robot:robot-connectivity-sdk:0.5.104'
+//  compile 'com.segway.robot:mobile-connectivity-sdk:0.5.104'
+//  compile 'com.segway.robot:emoji:0.1.18'
+//  compile 'com.segway.robot:support-lib:1.1.2'
+//}
+
+dependencies {
+    compile project(':android_10')
+    compile 'com.segway.robot:visionsdk:0.6.408'
+    compile 'com.segway.robot:basesdk:0.6.562'
+    compile 'com.segway.robot:headsdk:0.6.562'
+    compile 'com.segway.robot:sensorsdk:0.6.197'
+//    compile 'com.segway.robot:sensorsdk:0.6.562' // doesn't compile with this version...
+}
+
+apply plugin: 'com.android.application'
+
+android {
+  compileSdkVersion 25
+
+  defaultConfig {
+    minSdkVersion 21
+    applicationId "org.ros.android.android_loomo_ros"
+    targetSdkVersion 23
+    versionCode 1
+    versionName "1.0"
+  }
+}

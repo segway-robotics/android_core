@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">CameraTutorial</string>
-    <string name="pub_rscolor">Pub RsColor:</string>
-    <string name="pub_rsdepth">Pub RsDepth:</string>
-    <string name="pub_tf">TF:</string>
-    <string name="pub_spr">Pub Speech:</string>
-    <string name="sub_motion">Sub Motion:</string>
-</resources>
