@@ -10,11 +10,14 @@ import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
 import org.ros.node.Node;
 import org.ros.node.topic.Publisher;
+import org.ros.node.topic.Subscriber;
+import org.ros.message.MessageListener;
 
 import sensor_msgs.CameraInfo;
 import sensor_msgs.CompressedImage;
 import sensor_msgs.Image;
 import tf2_msgs.TFMessage;
+import geometry_msgs.Twist;
 
 /**
  * Created by kai on 17-7-16.
@@ -34,6 +37,7 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
     public Publisher<CameraInfo> mRsDepthInfoPubr;
     public Publisher<TFMessage> mTfPubr;
 
+    public Subscriber<Twist> mCmdVelSubr;
 
     public LoomoRosBridgeNode() {
         super();
@@ -57,6 +61,8 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
         mRsDepthPubr = connectedNode.newPublisher("loomo/realsense/depth", Image._TYPE);
         mRsDepthInfoPubr = connectedNode.newPublisher("loomo/realsense/depth/camera_info", CameraInfo._TYPE);
         mTfPubr = connectedNode.newPublisher("/tf", TFMessage._TYPE);
+
+        mCmdVelSubr = connectedNode.newSubscriber("/cmd_vel", Twist._TYPE);
 
     }
 

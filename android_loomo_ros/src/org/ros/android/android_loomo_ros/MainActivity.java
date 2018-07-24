@@ -26,6 +26,7 @@ import android.widget.Switch;
 import com.segway.robot.sdk.base.bind.ServiceBinder;
 import com.segway.robot.sdk.perception.sensor.Sensor;
 import com.segway.robot.sdk.vision.Vision;
+import com.segway.robot.sdk.locomotion.sbv.Base;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.android.RosActivity;
@@ -46,6 +47,7 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
 
     private Vision mVision;
     private Sensor mSensor;
+    private Base mBase;
 
     private Switch mPubRsColorSwitch;
     private Switch mPubRsDepthSwitch;
@@ -53,6 +55,7 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
 
     private RealsensePublisher mRealsensePublisher;
     private TFPublisher mTFPublisher;
+    private LocomotionSubscriber mLocomotionSubscriber;
 
     private LoomoRosBridgeNode mBridgeNode;
 
@@ -81,6 +84,7 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
         mPubRsDepthSwitch.setOnCheckedChangeListener(this);
         mPubTFSwitch.setOnCheckedChangeListener(this);
 
+        // Keep track of timestamps when images published, so corresponding TFs can be published too
         mDepthStamps = new ConcurrentLinkedDeque<>();
 
         // Start an instance of the LoomoRosBridgeNode
@@ -93,6 +97,12 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
         // get Sensor SDK instance
         mSensor = Sensor.getInstance();
         mSensor.bindService(this, mBindStateListener);
+
+        // get Locomotion SDK instance
+        mBase = Base.getInstance();
+        mBase.bindService(this, mBindLocomotionListener);
+
+
     }
 
 
@@ -103,6 +113,7 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
         mPubRsColorSwitch.setChecked(false);
         mPubRsDepthSwitch.setChecked(false);
         mPubTFSwitch.setChecked(false);
+        mLocomotionSubscriber.start_listening();
     }
 
     @Override
@@ -125,6 +136,7 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
                 NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(),
                         getMasterUri());
         nodeMainExecutor.execute(mBridgeNode, nodeConfiguration);
+
     }
 
     @Override
@@ -186,6 +198,23 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
                 mTFPublisher = new TFPublisher(mSensor, mBridgeNode, mDepthStamps);
             }
             mPubTFSwitch.setEnabled(true);
+        }
+
+        @Override
+        public void onUnbind(String reason) {
+            Log.d(TAG, "onUnbind() called with: reason = [" + reason + "]");
+        }
+    };
+
+    ServiceBinder.BindStateListener mBindLocomotionListener = new ServiceBinder.BindStateListener() {
+        @Override
+        public void onBind() {
+            Log.d(TAG, "mBindLocomotionListener onBind() called");
+            if (mLocomotionSubscriber == null) {
+                Log.d(TAG, "mBindLocomotionListener creating LocomotionSubscriber instance.");
+                mLocomotionSubscriber = new LocomotionSubscriber(mBase, mBridgeNode);
+                Log.d(TAG, "mBindLocomotionListener created LocomotionSubscriber instance.");
+            }
         }
 
         @Override
