@@ -52,11 +52,14 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
 
     private Switch mPubRsColorSwitch;
     private Switch mPubRsDepthSwitch;
+    private Switch mPubFisheyeSwitch;
+    private Switch mPubSensorSwitch;
     private Switch mPubTFSwitch;
 
     private RealsensePublisher mRealsensePublisher;
     private TFPublisher mTFPublisher;
     private LocomotionSubscriber mLocomotionSubscriber;
+    private SensorPublisher mSensorPublisher;
 
     private LoomoRosBridgeNode mBridgeNode;
 
@@ -79,12 +82,16 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
         // Add some switches to turn on/off sensor publishers
         mPubRsColorSwitch = (Switch) findViewById(R.id.rscolor);
         mPubRsDepthSwitch = (Switch) findViewById(R.id.rsdepth);
+        mPubFisheyeSwitch = (Switch) findViewById(R.id.fisheye);
         mPubTFSwitch = (Switch) findViewById(R.id.tf);
+        mPubSensorSwitch = (Switch) findViewById(R.id.sensor);
 
         // Add some listeners to the states of the switches
         mPubRsColorSwitch.setOnCheckedChangeListener(this);
         mPubRsDepthSwitch.setOnCheckedChangeListener(this);
+        mPubFisheyeSwitch.setOnCheckedChangeListener(this);
         mPubTFSwitch.setOnCheckedChangeListener(this);
+        mPubSensorSwitch.setOnCheckedChangeListener(this);
 
         // Keep track of timestamps when images published, so corresponding TFs can be published too
         mDepthStamps = new ConcurrentLinkedDeque<>();
@@ -161,6 +168,14 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
                     mRealsensePublisher.stop_depth();
                 }
                 break;
+            case R.id.fisheye:
+                mRealsensePublisher.mIsPubFisheye = isChecked;
+                if (isChecked) {
+                    mRealsensePublisher.start_fisheye();
+                } else {
+                    mRealsensePublisher.stop_fisheye();
+                }
+                break;
             case R.id.tf:
                 Log.d(TAG, "TF clicked.");
                 mTFPublisher.mIsPubTF = isChecked;
@@ -168,6 +183,15 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
                     mTFPublisher.start_tf();
                 } else {
                     mTFPublisher.stop_tf();
+                }
+                break;
+            case R.id.sensor:
+                Log.d(TAG, "Sensor clicked.");
+                mSensorPublisher.mIsPubSensor = isChecked;
+                if (isChecked) {
+                    mSensorPublisher.start_sensor();
+                } else {
+                    mSensorPublisher.stop_sensor();
                 }
                 break;
         }
@@ -184,8 +208,10 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
             Log.d(TAG, "bindVision enabling realsense switches.");
             mPubRsColorSwitch.setEnabled(true);
             mPubRsDepthSwitch.setEnabled(true);
+            mPubFisheyeSwitch.setEnabled(true);
             mPubRsColorSwitch.setChecked(true);
             mPubRsDepthSwitch.setChecked(true);
+            mPubFisheyeSwitch.setChecked(true);
         }
 
         @Override
@@ -201,8 +227,14 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
             if (mTFPublisher == null) {
                 mTFPublisher = new TFPublisher(mSensor, mBridgeNode, mDepthStamps);
             }
+            if (mSensorPublisher == null) {
+                mSensorPublisher = new SensorPublisher(mSensor, mBridgeNode);
+            }
             mPubTFSwitch.setEnabled(true);
+            mPubSensorSwitch.setEnabled(true);
             mPubTFSwitch.setChecked(true);
+            mPubSensorSwitch.setChecked(true);
+
         }
 
         @Override

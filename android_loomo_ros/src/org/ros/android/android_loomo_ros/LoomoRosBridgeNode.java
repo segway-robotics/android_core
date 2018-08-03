@@ -16,6 +16,7 @@ import org.ros.message.MessageListener;
 import sensor_msgs.CameraInfo;
 import sensor_msgs.CompressedImage;
 import sensor_msgs.Image;
+import std_msgs.Float32;
 import tf2_msgs.TFMessage;
 import geometry_msgs.Twist;
 
@@ -28,14 +29,17 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
 
     private ConnectedNode mConnectedNode;
     public MessageFactory mMessageFactory;
-    //    private Publisher<Image> mPcamPubr;
-//    private Publisher<CameraInfo> mPcamInfoPubr;
+    public Publisher<Image> mFisheyeCamPubr;
+    public Publisher<CompressedImage> mFisheyeCompressedPubr;
+    public Publisher<CameraInfo> mFisheyeCamInfoPubr;
     public Publisher<Image> mRsColorPubr;
     public Publisher<CompressedImage> mRsColorCompressedPubr;
     public Publisher<Image> mRsDepthPubr;
     public Publisher<CameraInfo> mRsColorInfoPubr;
     public Publisher<CameraInfo> mRsDepthInfoPubr;
     public Publisher<TFMessage> mTfPubr;
+    public Publisher<Float32> mInfraredPubr;
+    public Publisher<Float32> mUltrasonicPubr;
 
     public Subscriber<Twist> mCmdVelSubr;
 
@@ -53,14 +57,17 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
         Log.d(TAG, "onStart() creating publishers.");
         mConnectedNode = connectedNode;
         mMessageFactory = connectedNode.getTopicMessageFactory();
-//        mPcamPubr = connectedNode.newPublisher("loomo/pcam/rgb", Image._TYPE);
-//        mPcamInfoPubr = connectedNode.newPublisher("loomo/pcam/camera_info", CameraInfo._TYPE);
+        mFisheyeCamPubr = connectedNode.newPublisher("loomo/fisheye/rgb", Image._TYPE);
+        mFisheyeCompressedPubr = connectedNode.newPublisher("loomo/fisheye/rgb/compressed", CompressedImage._TYPE);
+        mFisheyeCamInfoPubr = connectedNode.newPublisher("loomo/fisheye/camera_info", CameraInfo._TYPE);
         mRsColorPubr = connectedNode.newPublisher("loomo/realsense/rgb", Image._TYPE);
         mRsColorCompressedPubr = connectedNode.newPublisher("loomo/realsense/rgb/compressed", CompressedImage._TYPE);
         mRsColorInfoPubr = connectedNode.newPublisher("loomo/realsense/rgb/camera_info", CameraInfo._TYPE);
         mRsDepthPubr = connectedNode.newPublisher("loomo/realsense/depth", Image._TYPE);
         mRsDepthInfoPubr = connectedNode.newPublisher("loomo/realsense/depth/camera_info", CameraInfo._TYPE);
         mTfPubr = connectedNode.newPublisher("/tf", TFMessage._TYPE);
+        mInfraredPubr = connectedNode.newPublisher("loomo/infrared", Float32._TYPE);
+        mUltrasonicPubr = connectedNode.newPublisher("loomo/ultrasonic", Float32._TYPE);
         mCmdVelSubr = mConnectedNode.newSubscriber("/cmd_vel", Twist._TYPE);
 
     }

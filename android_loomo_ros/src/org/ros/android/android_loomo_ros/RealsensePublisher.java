@@ -36,19 +36,22 @@ public class RealsensePublisher {
 
     public static final String RsDepthOpticalFrame = "rs_depth_optical_frame";
     public static final String RsColorOpticalFrame = "rs_color_optical_frame";
+    public static final String FisheyeOpticalFrame = "fisheye_optical_frame";
 
-    private Intrinsic mRsColorIntrinsic, mRsDepthIntrinsic;
+    private Intrinsic mRsColorIntrinsic, mRsDepthIntrinsic, mFisheyeIntrinsic;
     private int mRsColorWidth = 640;
     private int mRsColorHeight = 480;
     private int mRsDepthWidth = 320;
     private int mRsDepthHeight = 240;
+    private int mFisheyeWidth = 640;
+    private int mFisheyeHeight = 480;
 
-    private ChannelBufferOutputStream mRsColorOutStream, mRsDepthOutStream;
+    private ChannelBufferOutputStream mRsColorOutStream, mRsDepthOutStream, mFisheyeOutStream;
     public Queue<Long> mDepthStamps;
-    private Bitmap mRsColorBitmap;
+    private Bitmap mRsColorBitmap, mFisheyeBitmap;
 
-    boolean mIsPubRsColor;
-    boolean mIsPubRsDepth;
+
+    boolean mIsPubRsColor, mIsPubRsDepth, mIsPubFisheye;
 
     public RealsensePublisher(Vision mVision, LoomoRosBridgeNode mBridgeNode, Queue<Long> mDepthStamps) {
         this.mVision = mVision;
@@ -57,6 +60,7 @@ public class RealsensePublisher {
         this.mDepthStamps = mDepthStamps;
         mRsColorOutStream = new ChannelBufferOutputStream(MessageBuffers.dynamicBuffer());
         mRsDepthOutStream = new ChannelBufferOutputStream(MessageBuffers.dynamicBuffer());
+        mFisheyeOutStream = new ChannelBufferOutputStream(MessageBuffers.dynamicBuffer());
     }
 
     public synchronized void start_all() {
@@ -110,6 +114,13 @@ public class RealsensePublisher {
         mVision.startListenFrame(StreamType.DEPTH, mRsDepthListener);
     }
 
+    public synchronized void start_fisheye() {
+        Log.d(TAG, "start_fisheye() called");
+//        updateCameraInfo(1, mVision.getColorDepthCalibrationData().colorIntrinsic,
+//                mFisheyeWidth, mFisheyeHeight);
+        mVision.startListenFrame(StreamType.FISH_EYE, mFisheyeListener);
+    }
+
     public synchronized void stop_color() {
         Log.d(TAG, "stop_color() called");
         mVision.stopListenFrame(StreamType.COLOR);
@@ -118,6 +129,11 @@ public class RealsensePublisher {
     public synchronized void stop_depth() {
         Log.d(TAG, "stop_depth() called");
         mVision.stopListenFrame(StreamType.DEPTH);
+    }
+
+    public synchronized void stop_fisheye() {
+        Log.d(TAG, "stop_fisheye() called");
+        mVision.stopListenFrame(StreamType.FISH_EYE);
     }
 
     Vision.FrameListener mRsColorListener = new Vision.FrameListener() {
@@ -190,6 +206,40 @@ public class RealsensePublisher {
 
             mBridgeNode.mRsDepthPubr.publish(image);
             publishCameraInfo(3, image.getHeader());
+        }
+    };
+
+    Vision.FrameListener mFisheyeListener = new Vision.FrameListener() {
+        @Override
+        public void onNewFrame(int streamType, Frame frame) {
+//            Log.d(TAG, "mRsColorListener onNewFrame...");
+            if (!mIsPubFisheye) {
+                Log.d(TAG, "mFisheyeListener: !mIsPubFisheye");
+                return;
+            }
+            if (streamType != StreamType.FISH_EYE) {
+                Log.e(TAG, "onNewFrame@mFisheyeListener: stream type not FISH_EYE! THIS IS A BUG");
+                return;
+            }
+            if (mFisheyeBitmap == null || mFisheyeBitmap.getWidth() != mFisheyeWidth
+                    || mFisheyeBitmap.getHeight() != mFisheyeHeight) {
+                mFisheyeBitmap = Bitmap.createBitmap(mFisheyeWidth, mFisheyeHeight, Bitmap.Config.ALPHA_8);
+            }
+
+            mFisheyeBitmap.copyPixelsFromBuffer(frame.getByteBuffer()); // copy once
+
+            CompressedImage image = mBridgeNode.mFisheyeCompressedPubr.newMessage();
+            image.setFormat("jpeg");
+//            image.getHeader().setStamp(currentTime);
+            image.getHeader().setFrameId(FisheyeOpticalFrame);
+
+            mFisheyeBitmap.compress(Bitmap.CompressFormat.JPEG, 100, mFisheyeOutStream);
+            image.setData(mFisheyeOutStream.buffer().copy());              // copy twice
+
+            mFisheyeOutStream.buffer().clear();
+
+            mBridgeNode.mFisheyeCompressedPubr.publish(image);
+//            publishCameraInfo(2, image.getHeader());
         }
     };
 

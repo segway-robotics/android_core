@@ -18,17 +18,35 @@
             android:layout_height="wrap_content"
             android:id="@+id/rsdepth"
             android:text="@string/pub_rsdepth"/>
+
         <Switch
+            android:id="@+id/fisheye"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/tf"
-            android:text="@string/pub_tf"/>
+            android:layout_weight="1"
+            android:text="@string/pub_fisheye" />
+
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
+
+        <Switch
+            android:id="@+id/tf"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/pub_tf" />
+
+        <Switch
+            android:id="@+id/sensor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/pub_sensor" />
+
         <Switch
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
