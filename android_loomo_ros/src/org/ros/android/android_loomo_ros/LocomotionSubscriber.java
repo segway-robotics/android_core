@@ -1,12 +1,18 @@
 package org.ros.android.android_loomo_ros;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.segway.robot.sdk.locomotion.sbv.Base;
 
+import org.ros.android.RosActivity;
 import org.ros.message.MessageListener;
 
+import java.util.concurrent.TimeUnit;
+
 import geometry_msgs.Twist;
+
+import android.os.Handler;
 
 /**
  * Created by mfe on 7/24/18.
@@ -29,14 +35,23 @@ public class LocomotionSubscriber {
 
     public void start_listening(){
         // wait til ROS subscriber is set up, then start listening TODO: make this better
-        while (mBridgeNode.mCmdVelSubr == null){}
-        mBridgeNode.mCmdVelSubr.addMessageListener(cmdVelListener);
+        Handler handler=new Handler();
+        Runnable r=new Runnable() {
+            public void run() {
+                //what ever you do here will be done after 5 seconds delay.
+                Log.d(TAG, "Waited for ROS subscriber to connect. Going to hook up to cmd_vel now.");
+                mBridgeNode.mCmdVelSubr.addMessageListener(cmdVelListener);
+            }
+        };
+        handler.postDelayed(r, 5000);
+//        while (mBridgeNode.mCmdVelSubr == null){}
+//        mBridgeNode.connectToLocomotion();
+//        mBridgeNode.mCmdVelSubr.addMessageListener(cmdVelListener);
     };
 
     MessageListener<Twist> cmdVelListener = new MessageListener<Twist>() {
         @Override
         public void onNewMessage(Twist message) {
-//            Log.d(TAG, Double.toString(message.getAngular().getZ()));
             mBase.setLinearVelocity((float)message.getLinear().getX());
             mBase.setAngularVelocity((float)message.getAngular().getZ());
         }

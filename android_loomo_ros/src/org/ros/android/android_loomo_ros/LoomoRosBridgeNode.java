@@ -61,8 +61,7 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
         mRsDepthPubr = connectedNode.newPublisher("loomo/realsense/depth", Image._TYPE);
         mRsDepthInfoPubr = connectedNode.newPublisher("loomo/realsense/depth/camera_info", CameraInfo._TYPE);
         mTfPubr = connectedNode.newPublisher("/tf", TFMessage._TYPE);
-
-        mCmdVelSubr = connectedNode.newSubscriber("/cmd_vel", Twist._TYPE);
+        mCmdVelSubr = mConnectedNode.newSubscriber("/cmd_vel", Twist._TYPE);
 
     }
 

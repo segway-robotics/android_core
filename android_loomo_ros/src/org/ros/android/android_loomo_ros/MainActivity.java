@@ -33,6 +33,7 @@ import org.ros.android.RosActivity;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 
+import java.net.URI;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
 
@@ -61,9 +62,10 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
 
     private Queue<Long> mDepthStamps;
 
-    public MainActivity() {
-        super("LoomoROS", "LoomoROS");
-    }
+    // Assumes that ROS master is a different machine, with a hard-coded ROS_MASTER_URI.
+    // If you'd like to be able to select the URI in the app on startup, replace
+    // super( , , ) with super( , ) to start a different version of RosActivity
+    public MainActivity() { super("LoomoROS", "LoomoROS", URI.create("http://192.168.42.134:11311/"));}
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +104,6 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
         mBase = Base.getInstance();
         mBase.bindService(this, mBindLocomotionListener);
 
-
     }
 
 
@@ -110,18 +111,18 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
     protected void onRestart() {
         super.onRestart();
         Log.d(TAG, "onRestart() called");
-        mPubRsColorSwitch.setChecked(false);
-        mPubRsDepthSwitch.setChecked(false);
-        mPubTFSwitch.setChecked(false);
-        mLocomotionSubscriber.start_listening();
+//        mPubRsColorSwitch.setChecked(false);
+//        mPubRsDepthSwitch.setChecked(false);
+//        mPubTFSwitch.setChecked(false);
+//        mLocomotionSubscriber.start_listening();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mPubRsColorSwitch.setChecked(false);
-        mPubRsDepthSwitch.setChecked(false);
-        mPubTFSwitch.setChecked(false);
+//        mPubRsColorSwitch.setChecked(false);
+//        mPubRsDepthSwitch.setChecked(false);
+//        mPubTFSwitch.setChecked(false);
     }
 
     @Override
@@ -132,6 +133,7 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
 
     @Override
     protected void init(NodeMainExecutor nodeMainExecutor) {
+        Log.d(TAG, "init().");
         NodeConfiguration nodeConfiguration =
                 NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(),
                         getMasterUri());
@@ -174,14 +176,16 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
     ServiceBinder.BindStateListener mBindVisionListener = new ServiceBinder.BindStateListener() {
         @Override
         public void onBind() {
-            Log.i(TAG, "onBindVision");
+            Log.i(TAG, "onBind() mBindVisionListener called");
             if (mRealsensePublisher == null) {
-                Log.d(TAG, "bindVision need to create new RealsensePublisher.");
+                Log.d(TAG, "bindVision created new RealsensePublisher.");
                 mRealsensePublisher = new RealsensePublisher(mVision, mBridgeNode, mDepthStamps);
             }
             Log.d(TAG, "bindVision enabling realsense switches.");
             mPubRsColorSwitch.setEnabled(true);
             mPubRsDepthSwitch.setEnabled(true);
+            mPubRsColorSwitch.setChecked(true);
+            mPubRsDepthSwitch.setChecked(true);
         }
 
         @Override
@@ -193,11 +197,12 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
     ServiceBinder.BindStateListener mBindStateListener = new ServiceBinder.BindStateListener() {
         @Override
         public void onBind() {
-            Log.d(TAG, "onBind() called");
+            Log.d(TAG, "onBind() mBindStateListener called");
             if (mTFPublisher == null) {
                 mTFPublisher = new TFPublisher(mSensor, mBridgeNode, mDepthStamps);
             }
             mPubTFSwitch.setEnabled(true);
+            mPubTFSwitch.setChecked(true);
         }
 
         @Override
@@ -215,6 +220,7 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
                 mLocomotionSubscriber = new LocomotionSubscriber(mBase, mBridgeNode);
                 Log.d(TAG, "mBindLocomotionListener created LocomotionSubscriber instance.");
             }
+            mLocomotionSubscriber.start_listening();
         }
 
         @Override
