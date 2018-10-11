@@ -22,6 +22,7 @@ import geometry_msgs.Twist;
 
 /**
  * Created by kai on 17-7-16.
+ * Modified by mfe on 10-9-18.
  */
 
 public class LoomoRosBridgeNode extends AbstractNodeMain {
@@ -43,6 +44,10 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
 
     public Subscriber<Twist> mCmdVelSubr;
 
+    public String node_name = "loomo_ros_bridge_node";
+    public String tf_prefix = "LO01";
+    public boolean use_tf_prefix = true;
+
     public LoomoRosBridgeNode() {
         super();
         Log.d(TAG, "Created instance of LoomoRosBridgeNode().");
@@ -57,18 +62,22 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
         Log.d(TAG, "onStart() creating publishers.");
         mConnectedNode = connectedNode;
         mMessageFactory = connectedNode.getTopicMessageFactory();
-        mFisheyeCamPubr = connectedNode.newPublisher("loomo/fisheye/rgb", Image._TYPE);
-        mFisheyeCompressedPubr = connectedNode.newPublisher("loomo/fisheye/rgb/compressed", CompressedImage._TYPE);
-        mFisheyeCamInfoPubr = connectedNode.newPublisher("loomo/fisheye/camera_info", CameraInfo._TYPE);
-        mRsColorPubr = connectedNode.newPublisher("loomo/realsense/rgb", Image._TYPE);
-        mRsColorCompressedPubr = connectedNode.newPublisher("loomo/realsense/rgb/compressed", CompressedImage._TYPE);
-        mRsColorInfoPubr = connectedNode.newPublisher("loomo/realsense/rgb/camera_info", CameraInfo._TYPE);
-        mRsDepthPubr = connectedNode.newPublisher("loomo/realsense/depth", Image._TYPE);
-        mRsDepthInfoPubr = connectedNode.newPublisher("loomo/realsense/depth/camera_info", CameraInfo._TYPE);
+
+        if (use_tf_prefix == false){
+            tf_prefix = "";
+        }
+        mFisheyeCamPubr = connectedNode.newPublisher(tf_prefix+"/fisheye/rgb", Image._TYPE);
+        mFisheyeCompressedPubr = connectedNode.newPublisher(tf_prefix+"/fisheye/rgb/compressed", CompressedImage._TYPE);
+        mFisheyeCamInfoPubr = connectedNode.newPublisher(tf_prefix+"/fisheye/camera_info", CameraInfo._TYPE);
+        mRsColorPubr = connectedNode.newPublisher(tf_prefix+"/realsense_loomo/rgb", Image._TYPE);
+        mRsColorCompressedPubr = connectedNode.newPublisher(tf_prefix+"/realsense_loomo/rgb/compressed", CompressedImage._TYPE);
+        mRsColorInfoPubr = connectedNode.newPublisher(tf_prefix+"/realsense_loomo/rgb/camera_info", CameraInfo._TYPE);
+        mRsDepthPubr = connectedNode.newPublisher(tf_prefix+"/realsense_loomo/depth", Image._TYPE);
+        mRsDepthInfoPubr = connectedNode.newPublisher(tf_prefix+"/realsense_loomo/depth/camera_info", CameraInfo._TYPE);
         mTfPubr = connectedNode.newPublisher("/tf", TFMessage._TYPE);
-        mInfraredPubr = connectedNode.newPublisher("loomo/infrared", Float32._TYPE);
-        mUltrasonicPubr = connectedNode.newPublisher("loomo/ultrasonic", Float32._TYPE);
-        mCmdVelSubr = mConnectedNode.newSubscriber("/cmd_vel", Twist._TYPE);
+        mInfraredPubr = connectedNode.newPublisher(tf_prefix+"/infrared", Float32._TYPE);
+        mUltrasonicPubr = connectedNode.newPublisher(tf_prefix+"/ultrasonic", Float32._TYPE);
+        mCmdVelSubr = mConnectedNode.newSubscriber(tf_prefix+"/cmd_vel", Twist._TYPE);
 
     }
 
@@ -89,7 +98,10 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
 
     @Override
     public GraphName getDefaultNodeName() {
-        return GraphName.of("loomo_ros_bridge_node");
+        if (use_tf_prefix) {
+            node_name = tf_prefix + "/" + node_name;
+        }
+        return GraphName.of(node_name);
     }
 
 }

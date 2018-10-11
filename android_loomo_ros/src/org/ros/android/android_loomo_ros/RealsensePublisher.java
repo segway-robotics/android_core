@@ -34,9 +34,9 @@ public class RealsensePublisher {
     private Vision mVision;
     private LoomoRosBridgeNode mBridgeNode;
 
-    public static final String RsDepthOpticalFrame = "rs_depth_optical_frame";
-    public static final String RsColorOpticalFrame = "rs_color_optical_frame";
-    public static final String FisheyeOpticalFrame = "fisheye_optical_frame";
+    public String RsDepthOpticalFrame = "rs_depth_optical_frame";
+    public String RsColorOpticalFrame = "rs_color_optical_frame";
+    public String FisheyeOpticalFrame = "fisheye_optical_frame";
 
     private Intrinsic mRsColorIntrinsic, mRsDepthIntrinsic, mFisheyeIntrinsic;
     private int mRsColorWidth = 640;
@@ -56,6 +56,12 @@ public class RealsensePublisher {
     public RealsensePublisher(Vision mVision, LoomoRosBridgeNode mBridgeNode, Queue<Long> mDepthStamps) {
         this.mVision = mVision;
         this.mBridgeNode = mBridgeNode;
+
+        if (mBridgeNode.use_tf_prefix){
+            RsDepthOpticalFrame = mBridgeNode.tf_prefix + "_" + RsDepthOpticalFrame;
+            RsColorOpticalFrame = mBridgeNode.tf_prefix + "_" + RsColorOpticalFrame;
+            FisheyeOpticalFrame = mBridgeNode.tf_prefix + "_" + FisheyeOpticalFrame;
+        }
 
         this.mDepthStamps = mDepthStamps;
         mRsColorOutStream = new ChannelBufferOutputStream(MessageBuffers.dynamicBuffer());
@@ -230,7 +236,7 @@ public class RealsensePublisher {
 
             CompressedImage image = mBridgeNode.mFisheyeCompressedPubr.newMessage();
             image.setFormat("jpeg");
-//            image.getHeader().setStamp(currentTime);
+//            image.getHeader().setStamp();
             image.getHeader().setFrameId(FisheyeOpticalFrame);
 
             mFisheyeBitmap.compress(Bitmap.CompressFormat.JPEG, 100, mFisheyeOutStream);

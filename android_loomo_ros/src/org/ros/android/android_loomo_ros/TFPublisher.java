@@ -17,6 +17,7 @@ import geometry_msgs.Quaternion;
 import geometry_msgs.Transform;
 import geometry_msgs.TransformStamped;
 import geometry_msgs.Vector3;
+import std_msgs.Header;
 import tf2_msgs.TFMessage;
 
 /**
@@ -122,6 +123,28 @@ public class TFPublisher {
                         String target = frameNames.get(index.second);
                         String source = frameNames.get(index.first);
                         AlgoTfData tfData = mSensor.getTfData(source, target, stamp, 500);
+
+                        // ROS usually uses "base_link" and "odom" as fundamental tf names
+                        // definitely could remove this if you prefer Loomo's names
+                        if (source.equals(Sensor.BASE_POSE_FRAME)) {
+                            source = "base_link";
+                        }
+                        if (target.equals(Sensor.BASE_POSE_FRAME)) {
+                            target = "base_link";
+                        }
+                        if (source.equals(Sensor.WORLD_ODOM_ORIGIN)) {
+                            source = "odom";
+                        }
+                        if (target.equals(Sensor.WORLD_ODOM_ORIGIN)) {
+                            target = "odom";
+                        }
+
+                        // Add tf_prefix to each transform before ROS publishing (in case of multiple loomos on one network)
+                        if (mBridgeNode.use_tf_prefix) {
+                            tfData.srcFrameID = mBridgeNode.tf_prefix + "_" + source;
+                            tfData.tgtFrameID = mBridgeNode.tf_prefix + "_" + target;
+                        }
+
                         if (stamp != tfData.timeStamp) {
                             Log.d(TAG, String.format("run: getTfData failed for frames[%d]: %s -> %s",
                                     stamp, source, target));

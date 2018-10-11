@@ -211,7 +211,7 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
             mPubFisheyeSwitch.setEnabled(true);
             mPubRsColorSwitch.setChecked(true);
             mPubRsDepthSwitch.setChecked(true);
-            mPubFisheyeSwitch.setChecked(true);
+            mPubFisheyeSwitch.setChecked(false);
         }
 
         @Override
@@ -233,7 +233,7 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
             mPubTFSwitch.setEnabled(true);
             mPubSensorSwitch.setEnabled(true);
             mPubTFSwitch.setChecked(true);
-            mPubSensorSwitch.setChecked(true);
+            mPubSensorSwitch.setChecked(false);
 
         }
 
