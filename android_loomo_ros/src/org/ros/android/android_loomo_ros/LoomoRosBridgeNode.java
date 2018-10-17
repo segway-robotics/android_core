@@ -12,6 +12,7 @@ import org.ros.node.Node;
 import org.ros.node.topic.Publisher;
 import org.ros.node.topic.Subscriber;
 import org.ros.message.MessageListener;
+import org.ros.time.NtpTimeProvider;
 
 import sensor_msgs.CameraInfo;
 import sensor_msgs.CompressedImage;
@@ -28,7 +29,7 @@ import geometry_msgs.Twist;
 public class LoomoRosBridgeNode extends AbstractNodeMain {
     private static final String TAG = "LoomoRosBridgeNode";
 
-    private ConnectedNode mConnectedNode;
+    public ConnectedNode mConnectedNode;
     public MessageFactory mMessageFactory;
     public Publisher<Image> mFisheyeCamPubr;
     public Publisher<CompressedImage> mFisheyeCompressedPubr;
@@ -44,12 +45,15 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
 
     public Subscriber<Twist> mCmdVelSubr;
 
+    public NtpTimeProvider mNtpProvider;
+
     public String node_name = "loomo_ros_bridge_node";
     public String tf_prefix = "LO01";
     public boolean use_tf_prefix = true;
 
     public LoomoRosBridgeNode() {
         super();
+//        this.mNtpProvider = ntpTimeProvider;
         Log.d(TAG, "Created instance of LoomoRosBridgeNode().");
     }
 

@@ -1,5 +1,6 @@
 package org.ros.android.android_loomo_ros;
 
+import android.os.Handler;
 import android.util.Log;
 import android.util.Pair;
 
@@ -28,7 +29,7 @@ public class TFPublisher {
     public static final String TAG = "TFPublisher";
 
     public boolean mIsPubTF;
-    private Thread mSensorPublishThread;
+    private Thread mTFPublishThread;
 
     private Sensor mSensor;
     private LoomoRosBridgeNode mBridgeNode;
@@ -42,16 +43,25 @@ public class TFPublisher {
 
     public void start_tf() {
         Log.d(TAG, "start_tf()");
-        if (mSensorPublishThread == null) {
-            mSensorPublishThread = new SensorPublisherThread();
+        if (mTFPublishThread == null) {
+            mTFPublishThread = new TFPublisherThread();
         }
-        mSensorPublishThread.start();
+        Handler handler=new Handler();
+        Runnable r=new Runnable() {
+            public void run() {
+                //what ever you do here will be done after 5 seconds delay.
+                Log.d(TAG, "Waited for ROS publisher to connect. Going to start publishing TF data now.");
+                mTFPublishThread.start();
+            }
+        };
+        handler.postDelayed(r, 5000);
+
     }
 
     public void stop_tf() {
         Log.d(TAG, "stop_tf()");
         try {
-            mSensorPublishThread.join();
+            mTFPublishThread.join();
         } catch (InterruptedException e) {
             Log.w(TAG, "onUnbind: mSensorPublishThread.join() ", e);
         }
@@ -78,7 +88,7 @@ public class TFPublisher {
 //    };
 
 
-    private TransformStamped algoTf2TfStamped(AlgoTfData tfData, long stamp) {
+    private TransformStamped algoTf2TfStamped(AlgoTfData tfData, Long stamp) {
         Vector3 vector3 = mBridgeNode.mMessageFactory.newFromType(Vector3._TYPE);
         vector3.setX(tfData.t.x);
         vector3.setY(tfData.t.y);
@@ -95,11 +105,14 @@ public class TFPublisher {
         transformStamped.setTransform(transform);
         transformStamped.setChildFrameId(tfData.tgtFrameID);
         transformStamped.getHeader().setFrameId(tfData.srcFrameID);
-        transformStamped.getHeader().setStamp(Time.fromMillis(Utils.platformStampInMillis(stamp)));
+//        Log.d(TAG, "node: " + mBridgeNode.mConnectedNode.getCurrentTime().toString());
+//        Log.d(TAG, "system: " + Time.fromMillis(Utils.platformStampInMillis(stamp)).toString());
+//        Log.d(TAG, "diff: " + (mBridgeNode.mConnectedNode.getCurrentTime().subtract(Time.fromMillis(Utils.platformStampInMillis(stamp)))).toString());
+        transformStamped.getHeader().setStamp(mBridgeNode.mConnectedNode.getCurrentTime());
         return transformStamped;
     }
 
-    private class SensorPublisherThread extends Thread {
+    private class TFPublisherThread extends Thread {
         @Override
         public void run() {
             Log.d(TAG, "run: SensorPublisherThread");
@@ -122,7 +135,9 @@ public class TFPublisher {
                     for (Pair<Integer, Integer> index : frameIndices) {
                         String target = frameNames.get(index.second);
                         String source = frameNames.get(index.first);
-                        AlgoTfData tfData = mSensor.getTfData(source, target, stamp, 500);
+
+                        // Swapped source/target because it seemed backwards in RViz
+                        AlgoTfData tfData = mSensor.getTfData(target, source, stamp, 500);
 
                         // ROS usually uses "base_link" and "odom" as fundamental tf names
                         // definitely could remove this if you prefer Loomo's names
@@ -145,11 +160,11 @@ public class TFPublisher {
                             tfData.tgtFrameID = mBridgeNode.tf_prefix + "_" + target;
                         }
 
-                        if (stamp != tfData.timeStamp) {
-                            Log.d(TAG, String.format("run: getTfData failed for frames[%d]: %s -> %s",
-                                    stamp, source, target));
-                            continue;
-                        }
+//                        if (stamp != tfData.timeStamp) {
+//                            Log.d(TAG, String.format("run: getTfData failed for frames[%d]: %s -> %s",
+//                                    stamp, source, target));
+//                            continue;
+//                        }
                         TransformStamped transformStamped = algoTf2TfStamped(tfData, stamp);
                         tfMessage.getTransforms().add(transformStamped);
                     }

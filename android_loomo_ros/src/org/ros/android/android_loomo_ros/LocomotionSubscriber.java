@@ -44,9 +44,6 @@ public class LocomotionSubscriber {
             }
         };
         handler.postDelayed(r, 5000);
-//        while (mBridgeNode.mCmdVelSubr == null){}
-//        mBridgeNode.connectToLocomotion();
-//        mBridgeNode.mCmdVelSubr.addMessageListener(cmdVelListener);
     };
 
     MessageListener<Twist> cmdVelListener = new MessageListener<Twist>() {

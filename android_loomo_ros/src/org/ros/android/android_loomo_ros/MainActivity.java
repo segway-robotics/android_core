@@ -22,6 +22,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+import android.widget.Button;
 
 import com.segway.robot.sdk.base.bind.ServiceBinder;
 import com.segway.robot.sdk.perception.sensor.Sensor;
@@ -30,12 +31,15 @@ import com.segway.robot.sdk.locomotion.sbv.Base;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.android.RosActivity;
+import org.ros.message.Time;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
+import org.ros.time.NtpTimeProvider;
 
 import java.net.URI;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -50,15 +54,20 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
     private Sensor mSensor;
     private Base mBase;
 
+    private Button mKillAppButton;
+
+//    public NtpTimeProvider mNtpTimeProvider;
+
     private Switch mPubRsColorSwitch;
     private Switch mPubRsDepthSwitch;
     private Switch mPubFisheyeSwitch;
     private Switch mPubSensorSwitch;
-    private Switch mPubTFSwitch;
 
+    private Switch mPubTFSwitch;
     private RealsensePublisher mRealsensePublisher;
     private TFPublisher mTFPublisher;
     private LocomotionSubscriber mLocomotionSubscriber;
+
     private SensorPublisher mSensorPublisher;
 
     private LoomoRosBridgeNode mBridgeNode;
@@ -78,6 +87,10 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.main);
+
+//        // Add a button to be able to hard-kill this app (not recommended by android but whatever)
+//        mKillAppButton = (Button) findViewById(R.id.killapp);
+//        mKillAppButton.setOnClickListener(this);
 
         // Add some switches to turn on/off sensor publishers
         mPubRsColorSwitch = (Switch) findViewById(R.id.rscolor);
@@ -144,6 +157,22 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
         NodeConfiguration nodeConfiguration =
                 NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(),
                         getMasterUri());
+
+        NtpTimeProvider ntpTimeProvider =
+                new NtpTimeProvider(InetAddressFactory.newFromHostString("192.168.42.134"),
+                        nodeMainExecutor.getScheduledExecutorService());
+        try {
+            ntpTimeProvider.updateTime();
+        }
+        catch (Exception e){
+            Log.d(TAG, "exception when updating time...");
+        }
+//        Log.d(TAG, "ros: " + mNtpTimeProvider.getCurrentTime().toString());
+//        Log.d(TAG, "sys: " + System.currentTimeMillis());
+
+        ntpTimeProvider.startPeriodicUpdates(1, TimeUnit.MINUTES);
+        nodeConfiguration.setTimeProvider(ntpTimeProvider);
+
         nodeMainExecutor.execute(mBridgeNode, nodeConfiguration);
 
     }

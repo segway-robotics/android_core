@@ -59,6 +59,12 @@
             android:text="@string/sub_motion"/>
     </LinearLayout>
 
+    <Button
+        android:id="@+id/killapp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/kill_app_text" />
+
     <org.ros.android.view.camera.RosCameraPreviewView
         android:id="@+id/ros_camera_preview_view"
         android:layout_width="fill_parent"
