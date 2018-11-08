@@ -3,6 +3,8 @@
 
 This is early research code (Android app) that enables Loomo-to-Ubuntu PC connection through USB, with message passing in ROS.
 
+If you want to use the Android code as is, you might be able to just `abd install android_loomo_ros-release.apk` after downloading an apk file [here](https://www.dropbox.com/s/wm86eata78v7h9p/android_loomo_ros-release.apk?dl=0). I am curious if this works for anyone, so please let me know if you get a chance to try. You could then skip down to the "After Installing Android App onto Loomo" part of this readme.
+
 ### Starting from scratch ###
 
 1. On an Ubuntu 16.04 PC, install [ROS Kinetic](http://wiki.ros.org/kinetic/Installation/Ubuntu) and [Android Studio](http://wiki.ros.org/android/kinetic/Android%20Studio/Download).
@@ -31,6 +33,8 @@ catkin_make
 6. Choose `android_loomo_ros_core` as the build target, and click the green triangle (looks like play button) to build and install the android code onto Loomo.
 
 7. If that worked, there should be an app on the Loomo's home screen called `Loomo ROS`.
+
+This section was based on [this](https://github.com/segway-robotics/vision_msg_proc/blob/master/README.md) in case I left out important details.
 
 ### After Installing Android App onto Loomo ###
 
@@ -71,6 +75,3 @@ If all of that worked, you're able to send/receive data from your Loomo using RO
 There are a couple hard-coded parameters but you should feel free to change:
 - `ROS_MASTER_URI`: set to `192.168.42.134` - it's possible yours will be different
 - `tf_prefix`: set to `LO01` (short for Loomo 01, in case there are multiple loomos communicating with the same ROS master)
-
-If you get stuck, I based the beginninig of these instructions on:
-https://github.com/segway-robotics/vision_msg_proc/blob/master/README.md
