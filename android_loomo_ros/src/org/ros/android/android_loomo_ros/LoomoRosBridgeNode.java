@@ -42,6 +42,7 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
     public Publisher<TFMessage> mTfPubr;
     public Publisher<Float32> mInfraredPubr;
     public Publisher<Float32> mUltrasonicPubr;
+    public Publisher<Float32> mBasePitchPubr;
 
     public Subscriber<Twist> mCmdVelSubr;
 
@@ -49,6 +50,9 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
 
     public String node_name = "loomo_ros_bridge_node";
     public String tf_prefix = "LO01";
+    public boolean should_pub_ultrasonic = false;
+    public boolean should_pub_infrared = false;
+    public boolean should_pub_base_pitch = true;
     public boolean use_tf_prefix = true;
 
     public LoomoRosBridgeNode() {
@@ -62,7 +66,6 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
         Log.d(TAG, "onStart()");
         super.onStart(connectedNode);
 
-        // Create publishers for every possible Loomo topic
         Log.d(TAG, "onStart() creating publishers.");
         mConnectedNode = connectedNode;
         mMessageFactory = connectedNode.getTopicMessageFactory();
@@ -70,6 +73,8 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
         if (use_tf_prefix == false){
             tf_prefix = "";
         }
+
+        // Create publishers for many Loomo topics
         mFisheyeCamPubr = connectedNode.newPublisher(tf_prefix+"/fisheye/rgb", Image._TYPE);
         mFisheyeCompressedPubr = connectedNode.newPublisher(tf_prefix+"/fisheye/rgb/compressed", CompressedImage._TYPE);
         mFisheyeCamInfoPubr = connectedNode.newPublisher(tf_prefix+"/fisheye/camera_info", CameraInfo._TYPE);
@@ -81,6 +86,9 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
         mTfPubr = connectedNode.newPublisher("/tf", TFMessage._TYPE);
         mInfraredPubr = connectedNode.newPublisher(tf_prefix+"/infrared", Float32._TYPE);
         mUltrasonicPubr = connectedNode.newPublisher(tf_prefix+"/ultrasonic", Float32._TYPE);
+        mBasePitchPubr = connectedNode.newPublisher(tf_prefix+"/base_pitch", Float32._TYPE);
+
+        // Subscribe to commanded twist msgs (e.g. from joystick or autonomous driving software)
         mCmdVelSubr = mConnectedNode.newSubscriber(tf_prefix+"/cmd_vel", Twist._TYPE);
 
     }

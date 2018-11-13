@@ -3,11 +3,10 @@ package org.ros.android.android_loomo_ros;
 import android.os.Handler;
 import android.util.Log;
 
-import com.segway.robot.sdk.perception.sensor.InfraredData;
 import com.segway.robot.sdk.perception.sensor.Sensor;
-import com.segway.robot.sdk.perception.sensor.UltrasonicData;
+import com.segway.robot.sdk.perception.sensor.SensorData;
 
-import java.util.Queue;
+import java.util.Arrays;
 
 import std_msgs.Float32;
 
@@ -61,36 +60,32 @@ public class SensorPublisher {
             super.run();
 
             while (null != mSensor) {
-                UltrasonicData ultrasonicData = mSensor.getUltrasonicDistance();
-                InfraredData infraredData = mSensor.getInfraredDistance();
+                if (mBridgeNode.should_pub_ultrasonic){
+                    SensorData mUltrasonicData = mSensor.querySensorData(Arrays.asList(Sensor.ULTRASONIC_BODY)).get(0);
+                    float mUltrasonicDistance = mUltrasonicData.getIntData()[0];
+                    Float32 ultrasonicMessage = mBridgeNode.mUltrasonicPubr.newMessage();
+                    ultrasonicMessage.setData(mUltrasonicDistance);
+                    mBridgeNode.mUltrasonicPubr.publish(ultrasonicMessage);
+                }
+                if (mBridgeNode.should_pub_infrared) {
+                    SensorData mInfraredData = mSensor.querySensorData(Arrays.asList(Sensor.INFRARED_BODY)).get(0);
+                    float mInfraredDistanceLeft = mInfraredData.getIntData()[0];
+                    float mInfraredDistanceRight = mInfraredData.getIntData()[1];
+                    Float32 infraredMessage = mBridgeNode.mInfraredPubr.newMessage();
+                    infraredMessage.setData(mInfraredDistanceLeft);
+                    mBridgeNode.mInfraredPubr.publish(infraredMessage);
+                }
+                if (mBridgeNode.should_pub_base_pitch) {
+                    SensorData mBaseImu = mSensor.querySensorData(Arrays.asList(Sensor.BASE_IMU)).get(0);
+                    float mBasePitch = mBaseImu.getFloatData()[0];
+//                    float mBaseRoll = mBaseImu.getFloatData()[1];
+//                    float mBaseYaw = mBaseImu.getFloatData()[2];
+                    Float32 basePitchMessage = mBridgeNode.mBasePitchPubr.newMessage();
+                    basePitchMessage.setData(mBasePitch);
+                    mBridgeNode.mBasePitchPubr.publish(basePitchMessage);
+                }
 
-                Float32 ultrasonicMessage = mBridgeNode.mUltrasonicPubr.newMessage();
-                ultrasonicMessage.setData(ultrasonicData.getDistance());
-                mBridgeNode.mUltrasonicPubr.publish(ultrasonicMessage);
-
-                Float32 infraredMessage = mBridgeNode.mInfraredPubr.newMessage();
-                infraredMessage.setData(infraredData.getLeftDistance());
-                mBridgeNode.mInfraredPubr.publish(infraredMessage);
             }
-
-//            while (null != mSensor) {
-//                    TFMessage tfMessage = mBridgeNode.mTfPubr.newMessage();
-//                    for (Pair<Integer, Integer> index : frameIndices) {
-//                        String target = frameNames.get(index.second);
-//                        String source = frameNames.get(index.first);
-//                        AlgoTfData tfData = mSensor.getTfData(source, target, stamp, 500);
-//                        if (stamp != tfData.timeStamp) {
-//                            Log.d(TAG, String.format("run: getTfData failed for frames[%d]: %s -> %s",
-//                                    stamp, source, target));
-//                            continue;
-//                        }
-//                        TransformStamped transformStamped = algoTf2TfStamped(tfData, stamp);
-//                        tfMessage.getTransforms().add(transformStamped);
-//                    }
-//                    if (tfMessage.getTransforms().size() > 0)
-//                        mBridgeNode.mTfPubr.publish(tfMessage);
-//                }
-//            }
         }
     }
 }
