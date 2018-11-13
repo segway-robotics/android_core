@@ -15,5 +15,4 @@
  */
 
 include "android_10"
-include "android_15"
 include "android_loomo_ros"

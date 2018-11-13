@@ -14,26 +14,24 @@
  * the License.
  */
 
-/* Recommended dependencies according to developer.segway.com as of July 17, 2018 */
-//dependencies {
-//  compile 'com.segway.robot:visionsdk:0.6.408'
-//  compile 'com.segway.robot:speech-sdk:0.5.266'
-//  compile 'com.segway.robot:headsdk:0.6.562'
-//  compile 'com.segway.robot:basesdk:0.6.562'
-//  compile 'com.segway.robot:sensorsdk:0.6.562'
-//  compile 'com.segway.robot:robot-connectivity-sdk:0.5.104'
-//  compile 'com.segway.robot:mobile-connectivity-sdk:0.5.104'
-//  compile 'com.segway.robot:emoji:0.1.18'
-//  compile 'com.segway.robot:support-lib:1.1.2'
-//}
-
 dependencies {
     compile project(':android_10')
-    compile 'com.segway.robot:visionsdk:0.6.408'
-    compile 'com.segway.robot:basesdk:0.6.562'
-    compile 'com.segway.robot:headsdk:0.6.562'
-    compile 'com.segway.robot:sensorsdk:0.6.197'
+
+    compile 'com.segway.robot:visionsdk:0.6.547'
+    compile 'com.segway.robot:headsdk:0.6.746'
+    compile 'com.segway.robot:basesdk:0.6.746'
+    compile 'com.segway.robot:sensorsdk:0.6.746'
+    // known to be working version
+//    compile 'com.segway.robot:visionsdk:0.6.408'
+//    compile 'com.segway.robot:basesdk:0.6.562'
+//    compile 'com.segway.robot:headsdk:0.6.562'
+//    compile 'com.segway.robot:sensorsdk:0.6.197'
+    // didn't compile with this version...
 //    compile 'com.segway.robot:sensorsdk:0.6.562' // doesn't compile with this version...
+}
+
+dependencies {
+
 }
 
 apply plugin: 'com.android.application'
