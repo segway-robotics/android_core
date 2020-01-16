@@ -161,13 +161,14 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
         NtpTimeProvider ntpTimeProvider =
                 new NtpTimeProvider(InetAddressFactory.newFromHostString("192.168.42.134"),
                         nodeMainExecutor.getScheduledExecutorService());
+
         try {
             ntpTimeProvider.updateTime();
         }
         catch (Exception e){
             Log.d(TAG, "exception when updating time...");
         }
-//        Log.d(TAG, "ros: " + mNtpTimeProvider.getCurrentTime().toString());
+//        Log.d(TAG, "ros: " + ntpTimeProvider.getCurrentTime().toSeconds());
 //        Log.d(TAG, "sys: " + System.currentTimeMillis());
 
         ntpTimeProvider.startPeriodicUpdates(1, TimeUnit.MINUTES);

@@ -37,7 +37,7 @@ dependencies {
 apply plugin: 'com.android.application'
 
 android {
-  compileSdkVersion 25
+  compileSdkVersion 28
 
   defaultConfig {
     minSdkVersion 21
