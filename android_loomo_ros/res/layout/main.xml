@@ -60,6 +60,12 @@
     </LinearLayout>
 
     <Button
+        android:id="@+id/timeoffset"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="NTP time offset" />
+
+    <Button
         android:id="@+id/killapp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

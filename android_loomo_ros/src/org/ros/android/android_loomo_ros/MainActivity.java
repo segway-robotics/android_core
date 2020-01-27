@@ -18,11 +18,13 @@ package org.ros.android.android_loomo_ros;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.segway.robot.sdk.base.bind.ServiceBinder;
 import com.segway.robot.sdk.perception.sensor.Sensor;
@@ -55,8 +57,10 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
     private Base mBase;
 
     private Button mKillAppButton;
+    private Button mTimeOffsetButton;
 
 //    public NtpTimeProvider mNtpTimeProvider;
+    private NtpTimeProvider ntpTimeProvider;
 
     private Switch mPubRsColorSwitch;
     private Switch mPubRsDepthSwitch;
@@ -77,10 +81,13 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
     // Assumes that ROS master is a different machine, with a hard-coded ROS_MASTER_URI.
     // If you'd like to be able to select the URI in the app on startup, replace
     // super( , , ) with super( , ) to start a different version of RosActivity
+//    public MainActivity() { super("LoomoROS", "LoomoROS", URI.create("http://10.42.0.1:11311/"));}
+//    public MainActivity() { super("LoomoROS", "LoomoROS", URI.create("http://192.168.0.122:11311/"));}
     public MainActivity() { super("LoomoROS", "LoomoROS", URI.create("http://192.168.42.134:11311/"));}
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "onCreate() called");
 
         // Set up GUI window
         super.onCreate(savedInstanceState);
@@ -91,6 +98,17 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
 //        // Add a button to be able to hard-kill this app (not recommended by android but whatever)
 //        mKillAppButton = (Button) findViewById(R.id.killapp);
 //        mKillAppButton.setOnClickListener(this);
+
+        // Add a button to show the NTP time offset when clicked
+        mTimeOffsetButton = (Button) findViewById(R.id.timeoffset);
+        mTimeOffsetButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Toast message that displays NTP time offset in app
+                Toast toast = Toast.makeText(getApplicationContext(), "NTP time offset: " + Math.round(System.currentTimeMillis() - ntpTimeProvider.getCurrentTime().toSeconds()*1000) + " ms", Toast.LENGTH_LONG);
+                toast.show();
+            }
+        });
 
         // Add some switches to turn on/off sensor publishers
         mPubRsColorSwitch = (Switch) findViewById(R.id.rscolor);
@@ -158,7 +176,7 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
                 NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(),
                         getMasterUri());
 
-        NtpTimeProvider ntpTimeProvider =
+        ntpTimeProvider =
                 new NtpTimeProvider(InetAddressFactory.newFromHostString("192.168.42.134"),
                         nodeMainExecutor.getScheduledExecutorService());
 
@@ -180,6 +198,7 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        Log.d(TAG, "onCheckedChanged -- someone has clicked a button");
         // Someone has clicked a button - handle it here
         switch (buttonView.getId()) {
             case R.id.rscolor:
