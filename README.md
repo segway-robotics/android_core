@@ -26,11 +26,12 @@ cd ~/segway_ws
 catkin_make
 ```
 
-4. You are now done w/ `catkin_make` (everything else is Android-related). Open up Andorid Studio and open the `android_loomo_ros_core` project.
+4. You are now done w/ `catkin_make` (everything else is Android-related). Open up Andorid Studio and open the `android_loomo_ros` project.
 
 5. Connect a USB-C cable between Loomo's head and the Ubuntu PC.
 
-6. Choose `android_loomo_ros_core` as the build target, and click the green triangle (looks like play button) to build and install the android code onto Loomo.
+6. Choose `android_loomo_ros` as the build target, and click the green triangle (looks like play button) to build and install the android code onto Loomo.
+   - Make sure the `params.yaml` file located in the `android_loomo_ros` package is also on the Loomo at `/sdcard/params.yaml`. This can be done by running: `adb push params.yaml /sdcard/`
 
 7. If that worked, there should be an app on the Loomo's home screen called `Loomo ROS`.
 
