@@ -29,6 +29,8 @@ import geometry_msgs.Twist;
 public class LoomoRosBridgeNode extends AbstractNodeMain {
     private static final String TAG = "LoomoRosBridgeNode";
 
+    private final NodeParams params = Utils.loadParams();
+
     public ConnectedNode mConnectedNode;
     public MessageFactory mMessageFactory;
     public Publisher<Image> mFisheyeCamPubr;
@@ -48,12 +50,12 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
 
     public NtpTimeProvider mNtpProvider;
 
-    public String node_name = "loomo_ros_bridge_node";
-    public String tf_prefix = "LO01";
-    public boolean should_pub_ultrasonic = false;
-    public boolean should_pub_infrared = false;
-    public boolean should_pub_base_pitch = true;
-    public boolean use_tf_prefix = true;
+    public String node_name = params.getNodeName();  // loomo_ros_bridge_node
+    public String tf_prefix = params.getTfPrefix();  // LO01
+    public boolean should_pub_ultrasonic = params.getShouldPubUltrasonic();  // false
+    public boolean should_pub_infrared = params.getShouldPubInfrared();  // false
+    public boolean should_pub_base_pitch = params.getShouldPubBasePitch();  // true
+    public boolean use_tf_prefix = params.getUseTfPrefix();  // true
 
     public LoomoRosBridgeNode() {
         super();
@@ -75,21 +77,21 @@ public class LoomoRosBridgeNode extends AbstractNodeMain {
         }
 
         // Create publishers for many Loomo topics
-        mFisheyeCamPubr = connectedNode.newPublisher(tf_prefix+"/fisheye/rgb", Image._TYPE);
-        mFisheyeCompressedPubr = connectedNode.newPublisher(tf_prefix+"/fisheye/rgb/compressed", CompressedImage._TYPE);
-        mFisheyeCamInfoPubr = connectedNode.newPublisher(tf_prefix+"/fisheye/camera_info", CameraInfo._TYPE);
-        mRsColorPubr = connectedNode.newPublisher(tf_prefix+"/realsense_loomo/rgb", Image._TYPE);
-        mRsColorCompressedPubr = connectedNode.newPublisher(tf_prefix+"/realsense_loomo/rgb/compressed", CompressedImage._TYPE);
-        mRsColorInfoPubr = connectedNode.newPublisher(tf_prefix+"/realsense_loomo/rgb/camera_info", CameraInfo._TYPE);
-        mRsDepthPubr = connectedNode.newPublisher(tf_prefix+"/realsense_loomo/depth", Image._TYPE);
-        mRsDepthInfoPubr = connectedNode.newPublisher(tf_prefix+"/realsense_loomo/depth/camera_info", CameraInfo._TYPE);
-        mTfPubr = connectedNode.newPublisher("/tf", TFMessage._TYPE);
-        mInfraredPubr = connectedNode.newPublisher(tf_prefix+"/infrared", Float32._TYPE);
-        mUltrasonicPubr = connectedNode.newPublisher(tf_prefix+"/ultrasonic", Float32._TYPE);
-        mBasePitchPubr = connectedNode.newPublisher(tf_prefix+"/base_pitch", Float32._TYPE);
+        mFisheyeCamPubr = connectedNode.newPublisher(tf_prefix+params.getmFisheyeCamPubrTopic(), Image._TYPE);  // "/fisheye/rgb"
+        mFisheyeCompressedPubr = connectedNode.newPublisher(tf_prefix+params.getmFisheyeCompressedPubrTopic(), CompressedImage._TYPE);  // "/fisheye/rgb/compressed"
+        mFisheyeCamInfoPubr = connectedNode.newPublisher(tf_prefix+params.getmFisheyeCamInfoPubrTopic(), CameraInfo._TYPE);  // "/fisheye/camera_info"
+        mRsColorPubr = connectedNode.newPublisher(tf_prefix+params.getmRsColorPubrTopic(), Image._TYPE);  // "/realsense_loomo/rgb"
+        mRsColorCompressedPubr = connectedNode.newPublisher(tf_prefix+params.getmRsColorCompressedPubrTopic(), CompressedImage._TYPE);  // "/realsense_loomo/rgb/compressed"
+        mRsColorInfoPubr = connectedNode.newPublisher(tf_prefix+params.getmRsColorInfoPubrTopic(), CameraInfo._TYPE);  // "/realsense_loomo/rgb/camera_info"
+        mRsDepthPubr = connectedNode.newPublisher(tf_prefix+params.getmRsDepthPubrTopic(), Image._TYPE);  // "/realsense_loomo/depth"
+        mRsDepthInfoPubr = connectedNode.newPublisher(tf_prefix+params.getmRsDepthInfoPubrTopic(), CameraInfo._TYPE);  // "/realsense_loomo/depth/camera_info"
+        mTfPubr = connectedNode.newPublisher(params.getmTfPubrTopic(), TFMessage._TYPE);  // "/tf"
+        mInfraredPubr = connectedNode.newPublisher(tf_prefix+params.getmInfraredPubrTopic(), Float32._TYPE);  // "/infrared"
+        mUltrasonicPubr = connectedNode.newPublisher(tf_prefix+params.getmUltrasonicPubrTopic(), Float32._TYPE);  // "/ultrasonic"
+        mBasePitchPubr = connectedNode.newPublisher(tf_prefix+params.getmBasePitchPubrTopic(), Float32._TYPE);  // "/base_pitch"
 
         // Subscribe to commanded twist msgs (e.g. from joystick or autonomous driving software)
-        mCmdVelSubr = mConnectedNode.newSubscriber(tf_prefix+"/cmd_vel", Twist._TYPE);
+        mCmdVelSubr = mConnectedNode.newSubscriber(tf_prefix+params.getmCmdVelSubrTopic(), Twist._TYPE);  // "/cmd_vel"
 
     }
 

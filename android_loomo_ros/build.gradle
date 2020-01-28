@@ -28,22 +28,23 @@ dependencies {
 //    compile 'com.segway.robot:sensorsdk:0.6.197'
     // didn't compile with this version...
 //    compile 'com.segway.robot:sensorsdk:0.6.562' // doesn't compile with this version...
-}
 
-dependencies {
-
+    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.10'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.10'
 }
 
 apply plugin: 'com.android.application'
 
 android {
-  compileSdkVersion 28
+    compileSdkVersion 28
 
-  defaultConfig {
-    minSdkVersion 21
-    applicationId "org.ros.android.android_loomo_ros"
-    targetSdkVersion 23
-    versionCode 1
-    versionName "1.0"
-  }
+    defaultConfig {
+        multiDexEnabled true
+
+        minSdkVersion 21
+        applicationId "org.ros.android.android_loomo_ros"
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+    }
 }

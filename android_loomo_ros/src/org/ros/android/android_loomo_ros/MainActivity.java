@@ -17,7 +17,6 @@
 package org.ros.android.android_loomo_ros;
 
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -34,15 +33,10 @@ import com.segway.robot.sdk.locomotion.sbv.Base;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.android.RosActivity;
-import org.ros.message.Time;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 import org.ros.time.NtpTimeProvider;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -56,8 +50,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class MainActivity extends RosActivity implements CompoundButton.OnCheckedChangeListener {
     public static final String TAG = "MainRosActivity";
-
-    private final String masterURI;
 
     private Vision mVision;
     private Sensor mSensor;
@@ -85,33 +77,16 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
 
     private Queue<Long> mDepthStamps;
 
+    // loading params from yaml file
+    private final NodeParams params = Utils.loadParams();
+
     // Assumes that ROS master is a different machine, with a hard-coded ROS_MASTER_URI.
     // If you'd like to be able to select the URI in the app on startup, replace
     // super( , , ) with super( , ) to start a different version of RosActivity
-//    public MainActivity() { super("LoomoROS", "LoomoROS", URI.create("http://10.42.0.1:11311/"));}
-//    public MainActivity() { super("LoomoROS", "LoomoROS", URI.create("http://192.168.0.122:11311/"));}
 //    public MainActivity() { super("LoomoROS", "LoomoROS", URI.create("http://192.168.42.134:11311/"));}
 
-    // Pull ROS_MASTER_URI from a file on the Loomo SD card
-    public MainActivity() {
-        super("LoomoROS", "LoomoROS", URI.create(getMasterURI()));
-        masterURI = getMasterURI();
-    }
-
-    private static String getMasterURI() {
-        File sdcard = Environment.getExternalStorageDirectory();
-        File uriFile = new File(sdcard, "master_uri.txt");
-        String uri;
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(uriFile));
-            uri = br.readLine();
-        } catch (IOException e) {
-            Log.d(TAG, "Could not read from master_uri.txt: "  + e.getMessage() + "\nUsing default master URI http://192.168.42.134:11311/");
-            uri = "http://192.168.42.134:11311/";
-        }
-        Log.d(TAG, "Using Master URI: " + uri);
-        return uri;
-    }
+    // Pull ROS_MASTER_URI from yaml file
+    public MainActivity() { super("LoomoROS", "LoomoROS", URI.create(Utils.loadParams().getMasterURI())); }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -170,7 +145,7 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
         mBase = Base.getInstance();
         mBase.bindService(this, mBindLocomotionListener);
 
-        Toast.makeText(getApplicationContext(), "Connected to ROS master at URI: " + masterURI, Toast.LENGTH_LONG).show();
+        Toast.makeText(getApplicationContext(), "Connected to ROS master at URI: " + params.getMasterURI(), Toast.LENGTH_LONG).show();
     }
 
 
@@ -206,7 +181,7 @@ public class MainActivity extends RosActivity implements CompoundButton.OnChecke
                         getMasterUri());
 
         ntpTimeProvider =
-                new NtpTimeProvider(InetAddressFactory.newFromHostString("192.168.42.134"),
+                new NtpTimeProvider(InetAddressFactory.newFromHostString(params.getNtpServerIP()),  // NTP Server IP: 192.168.42.134
                         nodeMainExecutor.getScheduledExecutorService());
 
         try {

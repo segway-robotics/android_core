@@ -34,17 +34,20 @@ public class RealsensePublisher {
     private Vision mVision;
     private LoomoRosBridgeNode mBridgeNode;
 
-    public String RsDepthOpticalFrame = "rs_depth_optical_frame";
-    public String RsColorOpticalFrame = "rs_color_optical_frame";
-    public String FisheyeOpticalFrame = "fisheye_optical_frame";
+    // loading params from yaml file
+    private final NodeParams params = Utils.loadParams();
+
+    public String RsDepthOpticalFrame = params.getRsDepthOpticalFrame();  // rs_depth_optical_frame
+    public String RsColorOpticalFrame = params.getRsColorOpticalFrame();  // rs_color_optical_frame
+    public String FisheyeOpticalFrame = params.getFisheyeOpticalFrame();  // fisheye_optical_frame
 
     private Intrinsic mRsColorIntrinsic, mRsDepthIntrinsic, mFisheyeIntrinsic;
-    private int mRsColorWidth = 640;
-    private int mRsColorHeight = 480;
-    private int mRsDepthWidth = 320;
-    private int mRsDepthHeight = 240;
-    private int mFisheyeWidth = 640;
-    private int mFisheyeHeight = 480;
+    private int mRsColorWidth = params.getmRsColorWidth();   // 640
+    private int mRsColorHeight = params.getmRsColorHeight();  // 480
+    private int mRsDepthWidth = params.getmRsDepthWidth();   // 320
+    private int mRsDepthHeight = params.getmRsDepthHeight();  // 240
+    private int mFisheyeWidth = params.getmFisheyeWidth();   // 640
+    private int mFisheyeHeight = params.getmFisheyeHeight();  // 480
 
     private ChannelBufferOutputStream mRsColorOutStream, mRsDepthOutStream, mFisheyeOutStream;
     public Queue<Long> mDepthStamps;
